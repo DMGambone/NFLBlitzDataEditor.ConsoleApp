@@ -91,7 +91,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
         static void Main(string[] args)
         {
-            string romFileName = @"c:\mame\roms\blitz2k\blitz2k.bin";
+            string dataFileName = @"c:\mame\roms\blitz2k\blitz2k.bin";
             DataFileSettings dataFileSettings = new DataFileSettings
             {
                 PlayerListOffset = 90483472,
@@ -102,7 +102,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 TeamCount = 31
             };
 
-            using (System.IO.Stream stream = System.IO.File.OpenRead(romFileName))
+            using (System.IO.Stream stream = System.IO.File.OpenRead(dataFileName))
             {
                 IDataFileReader reader = new Blitz2KArcadeDataFileReader(stream, dataFileSettings);
                 DataFile dataFile = reader.Read();
@@ -119,9 +119,10 @@ namespace NFLBlitzDataEditor.ConsoleApp
                         Console.WriteLine(player.ConvertToString());
                     }
                 }
-
-                
             }
+
+            System.IO.Directory.CreateDirectory("images");
+            ExtractImages(dataFileName, dataFileSettings);
         }
     }
 }

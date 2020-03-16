@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections.Generic;
 using NFLBlitzDataEditor.Core.Readers;
 using NFLBlitzDataEditor.Core.Models;
+using NFLBlitzDataEditor.Core.Enums;
 using NFLBlitzDataEditor.ConsoleApp.Extensions;
 
 namespace NFLBlitzDataEditor.ConsoleApp
@@ -28,7 +29,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
             }
         }
 
-                static int FindInArray(int startIndex, byte[] find, byte[] buffer)
+        static int FindInArray(int startIndex, byte[] find, byte[] buffer)
         {
             int findLength = find.Length;
             int bufferLength = buffer.Length;
@@ -63,28 +64,43 @@ namespace NFLBlitzDataEditor.ConsoleApp
                     };
 
                 uint readBatchSize = 1024 * 1024 * 1024;
-                uint position = 0;
-                stream.Seek(position, SeekOrigin.Begin);
-                List<uint> matches = new List<uint>();
+                int batchStartPosition = 0;
+                stream.Seek(batchStartPosition, SeekOrigin.Begin);
+                IDictionary<int, Image> matches = new Dictionary<int, Image>();
 
                 //Just focus on the inital 2GB of the data file
                 byte[] buffer = new byte[readBatchSize];
                 stream.Read(buffer, 0, (int)readBatchSize);
 
-                int matchIndex = -1;
-                while ((matchIndex = FindInArray(matchIndex + 1, findPattern, buffer)) != -1)
+                IDataFileReader reader = new Blitz2KArcadeDataFileReader(stream, dataFileSettings);
+                int offset = 0;
+                while (offset < readBatchSize)
                 {
-                    matches.Add(position + (uint)matchIndex);
+                    int imageStart = FindInArray(offset, findPattern, buffer);
+                    if(imageStart == -1)
+                        break;
+
+                    Image image = reader.ReadImage(batchStartPosition + imageStart);
+                    if(image == null)
+                    {
+                        //False match, advance to immediately after the false match
+                        offset = imageStart + 1;
+                        continue;
+                    }
+
+                    matches.Add(imageStart, image);
+                    int dataLength = 40 + (image.Data.Length * (image.Format == ImageFormat.BitmapMask ? 1 : 2));
+                    offset = imageStart + dataLength;
                 }
 
-                IDataFileReader reader = new Blitz2KArcadeDataFileReader(stream, dataFileSettings);
-                foreach (uint match in matches)
+                foreach (int key in matches.Keys.OrderBy(key => key).ToArray())
                 {
-                    Image image = reader.ReadImage(match);
-                    if (image == null)
-                        continue;
+                    Image image = matches[key];
 
-                    image.SaveAsPNG(System.IO.Path.Combine(".\\images", $"{match.ToString("000000000")}.png"));
+                    Console.WriteLine("Image found:\t{0}\t{1}\t{2}", key, image.Format, image.Data.Length);
+                    string path = System.IO.Path.Combine(".\\images", image.Format.ToString());
+                    System.IO.Directory.CreateDirectory(path);
+                    image.SaveAsPNG(System.IO.Path.Combine(path, $"{key.ToString("000000000")}.png"));
                 }
             }
         }
@@ -108,13 +124,13 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 DataFile dataFile = reader.Read();
 
                 IEnumerable<Team> teams = dataFile.Teams;
-                foreach(Team team in teams)
+                foreach (Team team in teams)
                 {
                     IEnumerable<Player> players = team.Players;
 
                     Console.WriteLine("------------------------------");
                     Console.WriteLine(team.ConvertToString());
-                    foreach(Player player in players)
+                    foreach (Player player in players)
                     {
                         Console.WriteLine(player.ConvertToString());
                     }

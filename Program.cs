@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using NFLBlitzDataEditor.Core.Readers;
 using NFLBlitzDataEditor.Core.Models;
 using NFLBlitzDataEditor.Core.Enums;
 using NFLBlitzDataEditor.ConsoleApp.Extensions;
+using Newtonsoft.Json;
 
 namespace NFLBlitzDataEditor.ConsoleApp
 {
@@ -55,7 +55,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
             return -1;
         }
 
-        static void ExtractImages(string dataFileName, DataFileSettings dataFileSettings)
+        static void ExtractImages(string dataFileName)
         {
             using (System.IO.Stream stream = System.IO.File.OpenRead(dataFileName))
             {
@@ -72,7 +72,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 byte[] buffer = new byte[readBatchSize];
                 stream.Read(buffer, 0, (int)readBatchSize);
 
-                IDataFileReader reader = new Blitz2KArcadeDataFileReader(stream, dataFileSettings);
+                IDataFileReader reader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeDataFileReader(stream);
                 int offset = 0;
                 while (offset < readBatchSize)
                 {
@@ -107,20 +107,11 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
         static void Main(string[] args)
         {
-            string dataFileName = @"c:\mame\roms\blitz2k\blitz2k.bin";
-            DataFileSettings dataFileSettings = new DataFileSettings
-            {
-                PlayerListOffset = 90483472,
-                PlayerRecordSize = 92,
-                PlayersPerTeam = 16,
-                TeamListOffset = 90529104,
-                TeamRecordSize = 116,
-                TeamCount = 31
-            };
+            string dataFileName = @"c:\mame\roms\blitz2k\blitz2k-arcade.bin";
 
             using (System.IO.Stream stream = System.IO.File.OpenRead(dataFileName))
             {
-                IDataFileReader reader = new Blitz2KArcadeDataFileReader(stream, dataFileSettings);
+                IDataFileReader reader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeDataFileReader(stream);
                 DataFile dataFile = reader.Read();
 
                 IEnumerable<Team> teams = dataFile.Teams;
@@ -138,7 +129,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
             }
 
             System.IO.Directory.CreateDirectory("images");
-            ExtractImages(dataFileName, dataFileSettings);
+            ExtractImages(dataFileName);
         }
     }
 }

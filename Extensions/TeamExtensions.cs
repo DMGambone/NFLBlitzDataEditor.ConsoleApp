@@ -20,7 +20,7 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
             stringBuilder.AppendFormat("| {0:00} ", team.LinemenRating);
             stringBuilder.AppendFormat("| {0:00} ", team.DefenseRating);
             stringBuilder.AppendFormat("| {0:00} ", team.SpecialTeamsRating);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset1);
+            stringBuilder.AppendFormat("| {0:00} ", team.PlayersOffset);
             stringBuilder.AppendFormat("| {0:00} ", team.FileOffset2);
             stringBuilder.AppendFormat("| {0:00} ", team.FileOffset3);
             stringBuilder.AppendFormat("| {0:00} ", team.FileOffset4);

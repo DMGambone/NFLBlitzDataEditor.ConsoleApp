@@ -7,7 +7,7 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
 {
     public static class ImageInfoExtensions
     {
-        public static string ConvertToString(this ImageInfo imageInfo, Image image = null)
+        public static string ConvertToString(this ImageInfo imageInfo, ImageData image = null)
         {
             StringBuilder stringBuilder = new StringBuilder();
 

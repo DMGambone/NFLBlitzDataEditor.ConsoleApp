@@ -128,6 +128,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 }
             }
 
+<<<<<<< Updated upstream
             //System.IO.Directory.CreateDirectory("images");
             //ExtractImages(dataFileName);
 
@@ -146,6 +147,11 @@ namespace NFLBlitzDataEditor.ConsoleApp
             }
 
 
+=======
+            System.IO.Directory.CreateDirectory("images");
+            //ExtractImages(dataFileName);
+
+>>>>>>> Stashed changes
             Console.ReadLine();
         }
 

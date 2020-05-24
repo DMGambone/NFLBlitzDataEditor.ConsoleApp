@@ -77,11 +77,11 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 while (offset < readBatchSize)
                 {
                     int imageStart = FindInArray(offset, findPattern, buffer);
-                    if(imageStart == -1)
+                    if (imageStart == -1)
                         break;
 
                     Image image = reader.ReadImage(batchStartPosition + imageStart);
-                    if(image == null)
+                    if (image == null)
                     {
                         //False match, advance to immediately after the false match
                         offset = imageStart + 1;
@@ -128,8 +128,26 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 }
             }
 
-            System.IO.Directory.CreateDirectory("images");
-            ExtractImages(dataFileName);
+            //System.IO.Directory.CreateDirectory("images");
+            //ExtractImages(dataFileName);
+
+
+            //Test: Read TMSEL00.WMS (located at 91313848).  It's equivalent image is located at 15005700.
+            Console.WriteLine();
+            using (Stream stream = File.OpenRead(dataFileName))
+            {
+                IDataFileReader reader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeDataFileReader(stream);
+                ImageTable imageTable = reader.ReadImageTable(91313848, 60);
+                Image image = reader.ReadImage(15005700);
+
+                Console.WriteLine($"Image table for {imageTable.Name}");
+                foreach (ImageInfo imageInfo in imageTable.Entries)
+                    Console.WriteLine(imageInfo.ConvertToString(image));
+            }
+
+
+            Console.ReadLine();
         }
+
     }
 }

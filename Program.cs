@@ -31,7 +31,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
         static void Main(string[] args)
         {
-            string dataFileName = @"c:\mame\roms\blitz2k\blitz2k-arcade.bin";
+            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
 
             using (System.IO.Stream stream = System.IO.File.OpenRead(dataFileName))
             {
@@ -56,21 +56,21 @@ namespace NFLBlitzDataEditor.ConsoleApp
             NFLBlitzImageHelper imageHelper = new NFLBlitzImageHelper();
             imageHelper.ExtractAllImages(dataFileName, "images", true);
 
-            Image image = null;
-            //Test: Read TMSEL00.WMS (located at 91313848).  It's equivalent image is located at 15005700.
-            Console.WriteLine();
-            image = imageHelper.GetImage(dataFileName, 91313848, 60, 15005700);
-            imageHelper.OutputImageInformation(image);
+            // Image image = null;
+            // //Test: Read TMSEL00.WMS (located at 91313848).  It's equivalent image is located at 15005700.
+            // Console.WriteLine();
+            // image = imageHelper.GetImage(dataFileName, 91313848, 60, 15005700);
+            // imageHelper.OutputImageInformation(image);
 
-            //Test: Read TMSEL00.WMS (located at 91316020).  It's equivalent image is located at 15140868.
-            Console.WriteLine();
-            image = imageHelper.GetImage(dataFileName, 91316020, 38, 15140868);
-            imageHelper.OutputImageInformation(image);
+            // //Test: Read TMSEL00.WMS (located at 91316020).  It's equivalent image is located at 15140868.
+            // Console.WriteLine();
+            // image = imageHelper.GetImage(dataFileName, 91316020, 38, 15140868);
+            // imageHelper.OutputImageInformation(image);
 
-            //Test: Read TMPLQ00.WMS (located at 91312748).  It's equivalent image is located at 14596100.
-            Console.WriteLine();
-            image = imageHelper.GetImage(dataFileName, 91312748, 23, 14596100);
-            imageHelper.OutputImageInformation(image);
+            // //Test: Read TMPLQ00.WMS (located at 91312748).  It's equivalent image is located at 14596100.
+            // Console.WriteLine();
+            // image = imageHelper.GetImage(dataFileName, 91312748, 23, 14596100);
+            // imageHelper.OutputImageInformation(image);
 
             Console.ReadLine();
         }

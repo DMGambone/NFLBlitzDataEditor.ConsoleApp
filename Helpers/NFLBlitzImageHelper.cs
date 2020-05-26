@@ -90,9 +90,14 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
                     }
 
                     matches.Add(imageStart, image);
-                    int dataLength = 40 + (image.Data.Length * (image.Format == ImageFormat.BitmapMask ? 1 : 2));
+                    int dataLength = 40 + (image.Data.Length * (image.Format == ImageFormat.RGB332 ? 1 : 2));
                     offset = imageStart + dataLength;
                 }
+
+                string imageManifestPath = Path.Combine(outputPath, "images.txt");
+                if(File.Exists(imageManifestPath))
+                    File.Delete(imageManifestPath);
+                Console.WriteLine($"Writing image manifest to {imageManifestPath}");
 
                 foreach (int key in matches.Keys.OrderBy(key => key).ToArray())
                 {
@@ -102,7 +107,10 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
                     if (groupByImageFormat)
                         path = Path.Combine(path, image.Format.ToString());
                     System.IO.Directory.CreateDirectory(path);
-                    SaveAsPNG(image, System.IO.Path.Combine(path, $"{key.ToString("000000000")}.png"));
+
+                    string imagePath = System.IO.Path.Combine(path, $"{key.ToString("000000000")}.png");
+                    File.AppendAllText(imageManifestPath, string.Format("{0,30}: {1}\n", imagePath, image.ConvertImageDataHeaderToString()));
+                    SaveAsPNG(image, imagePath);
                 }
             }
         }

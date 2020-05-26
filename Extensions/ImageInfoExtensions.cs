@@ -33,5 +33,23 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
             return stringBuilder.ToString();
         }
 
+        public static string ConvertImageDataHeaderToString(this ImageData imageData)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendFormat("| {0:X8} ", imageData.Version);
+            stringBuilder.AppendFormat("| {0:X8} ", (int)imageData.Bias);
+            stringBuilder.AppendFormat("| {0,14} ", imageData.FilterMode.ToString());
+            stringBuilder.AppendFormat("| {0,5} ", imageData.UseTrilinearFiltering.ToString());
+            stringBuilder.AppendFormat("| {0:000} ", imageData.Width);
+            stringBuilder.AppendFormat("| {0:000} ", imageData.Height);
+            stringBuilder.AppendFormat("| {0,6} ", imageData.SmallestLOD);
+            stringBuilder.AppendFormat("| {0,6} ", imageData.LargestLOD);
+            stringBuilder.AppendFormat("| {0,14} ", imageData.AspectRatio);
+            stringBuilder.AppendFormat("| {0,16} ", imageData.Format);
+
+            return stringBuilder.ToString();
+        }
+
     }
 }

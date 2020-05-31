@@ -8,17 +8,18 @@ using NFLBlitzDataEditor.Core.Enums;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats.Png;
 using NFLBlitzDataEditor.ConsoleApp.Extensions;
+using NFLBlitzDataEditor.Core.FileSystem;
 
 namespace NFLBlitzDataEditor.ConsoleApp.Helpers
 {
     public class NFLBlitzImageHelper
     {
-        private IDataFileReader CreateDataFileReader(Stream stream)
+        private DataFileReader CreateDataFileReader(Stream stream)
         {
             return new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeDataFileReader(stream);
         }
 
-        private void SaveAsPNG(ImageData image, string destPath)
+        public void SaveAsPNG(ImageData image, string destPath)
         {
             Rgba32[] pixels = image.Data.Select(pixel => new Rgba32(pixel)).ToArray();
             SixLabors.ImageSharp.Image outputImage = SixLabors.ImageSharp.Image.LoadPixelData<Rgba32>(pixels, image.Width, image.Height);
@@ -27,91 +28,6 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
             {
                 PngEncoder encoder = new PngEncoder();
                 outputImage.Save(outputStream, encoder);
-            }
-        }
-
-        private int FindInArray(int startIndex, byte[] find, byte[] buffer)
-        {
-            int findLength = find.Length;
-            int bufferLength = buffer.Length;
-            int position = startIndex;
-
-            while (position + findLength + 1 < bufferLength)
-            {
-                int offset = 0;
-                bool matched = true;
-
-                while (offset < findLength && matched)
-                {
-                    matched = (find[offset] == buffer[position + offset]);
-                    offset++;
-                }
-
-                if (matched)
-                    return position;
-
-                position++;
-            }
-
-            return -1;
-        }
-
-        public void ExtractAllImages(string dataFileName, string outputPath, bool groupByImageFormat, int startPosition = 0)
-        {
-            using (System.IO.Stream stream = System.IO.File.OpenRead(dataFileName))
-            {
-                byte[] findPattern = new byte[] {
-                   0x05, 0x80, 0x00, 0x00
-                    };
-
-                uint readBatchSize = 1024 * 1024 * 1024;
-                int batchStartPosition = startPosition;
-                stream.Seek(batchStartPosition, SeekOrigin.Begin);
-                IDictionary<int, ImageData> matches = new Dictionary<int, ImageData>();
-
-                //Just focus on the inital 2GB of the data file
-                byte[] buffer = new byte[readBatchSize];
-                stream.Read(buffer, 0, (int)readBatchSize);
-
-                IDataFileReader reader = CreateDataFileReader(stream);
-                int offset = 0;
-                while (offset < readBatchSize)
-                {
-                    int imageStart = FindInArray(offset, findPattern, buffer);
-                    if (imageStart == -1)
-                        break;
-
-                    ImageData image = reader.ReadImageData(batchStartPosition + imageStart);
-                    if (image == null)
-                    {
-                        //False match, advance to immediately after the false match
-                        offset = imageStart + 1;
-                        continue;
-                    }
-
-                    matches.Add(imageStart, image);
-                    int dataLength = 40 + (image.Data.Length * (image.Format == ImageFormat.RGB332 ? 1 : 2));
-                    offset = imageStart + dataLength;
-                }
-
-                string imageManifestPath = Path.Combine(outputPath, "images.txt");
-                if(File.Exists(imageManifestPath))
-                    File.Delete(imageManifestPath);
-                Console.WriteLine($"Writing image manifest to {imageManifestPath}");
-
-                foreach (int key in matches.Keys.OrderBy(key => key).ToArray())
-                {
-                    ImageData image = matches[key];
-
-                    string path = outputPath;
-                    if (groupByImageFormat)
-                        path = Path.Combine(path, image.Format.ToString());
-                    System.IO.Directory.CreateDirectory(path);
-
-                    string imagePath = System.IO.Path.Combine(path, $"{key.ToString("000000000")}.png");
-                    File.AppendAllText(imageManifestPath, string.Format("{0,30}: {1}\n", imagePath, image.ConvertImageDataHeaderToString()));
-                    SaveAsPNG(image, imagePath);
-                }
             }
         }
 
@@ -126,7 +42,7 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
         {
             using (Stream stream = File.OpenRead(dataFileName))
             {
-                IDataFileReader reader = CreateDataFileReader(stream);
+                DataFileReader reader = CreateDataFileReader(stream);
                 return reader.ReadImage(imageTableAddress, numberOfEntries, imageAddress);
             }
         }

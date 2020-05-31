@@ -2,6 +2,7 @@
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using NFLBlitzDataEditor.Core.FileSystem;
 using NFLBlitzDataEditor.Core.Readers;
 using NFLBlitzDataEditor.Core.Models;
 using NFLBlitzDataEditor.ConsoleApp.Extensions;
@@ -29,49 +30,58 @@ namespace NFLBlitzDataEditor.ConsoleApp
             }
         }
 
+        static bool SaveAsImage(IMidwayFileSystem fileSystem, FileAllocationTableEntry entry, string outputPath)
+        {
+            ImageData image = fileSystem.ReadImage(entry.Name);
+            if (image == null)
+            {
+                Console.WriteLine($"{entry.Name} (address: {entry.Address}-{entry.Address + entry.Size}) did not contain valid image data.");
+                return false;
+            }
+
+            NFLBlitzImageHelper imageHelper = new NFLBlitzImageHelper();
+            string path = Path.Combine(outputPath, $"{Path.GetFileNameWithoutExtension(entry.Name)}.png");
+            imageHelper.SaveAsPNG(image, path);
+
+            return true;
+        }
+
         static void Main(string[] args)
         {
             string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
 
-            using (System.IO.Stream stream = System.IO.File.OpenRead(dataFileName))
+            string outputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "files");
+            Directory.CreateDirectory(outputDirectory);
+
+            string imagesDirectory = Path.Combine(outputDirectory, "images");
+            Directory.CreateDirectory(imagesDirectory);
+
+            string fileManifestPath = Path.Combine(outputDirectory, "file manifest.txt");
+            if (File.Exists(fileManifestPath))
+                File.Delete(fileManifestPath);
+
+            using (Stream stream = File.Open(dataFileName, FileMode.Open, FileAccess.ReadWrite, FileShare.Read))
             {
-                IDataFileReader reader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeDataFileReader(stream);
-                DataFile dataFile = reader.Read();
+                IMidwayFileSystem fileSystem = new BlitzFileSystem(stream);
+                IEnumerable<FileAllocationTableEntry> fileEntries = fileSystem.GetFiles();
 
-                IEnumerable<Team> teams = dataFile.Teams;
-                foreach (Team team in teams)
+                foreach (FileAllocationTableEntry entry in fileEntries)
                 {
-                    IEnumerable<Player> players = team.Players;
+                    File.AppendAllText(fileManifestPath, $"{entry.ConvertToString()}\n");
+                    if (entry.Name.EndsWith(".wms", StringComparison.OrdinalIgnoreCase)
+                        && SaveAsImage(fileSystem, entry, imagesDirectory))
+                        continue;
 
-                    Console.WriteLine("------------------------------");
-                    Console.WriteLine(team.ConvertToString());
-                    foreach (Player player in players)
+                    using (Stream fileStream = fileSystem.OpenRead(entry.Name))
                     {
-                        Console.WriteLine(player.ConvertToString());
+                        string path = Path.Combine(outputDirectory, $"{entry.Name}");
+                        using (Stream outputStream = File.Open(path, FileMode.OpenOrCreate))
+                            fileStream.CopyTo(outputStream);
                     }
                 }
             }
 
-            System.IO.Directory.CreateDirectory("images");
-            NFLBlitzImageHelper imageHelper = new NFLBlitzImageHelper();
-            imageHelper.ExtractAllImages(dataFileName, "images", true);
-
-            // Image image = null;
-            // //Test: Read TMSEL00.WMS (located at 91313848).  It's equivalent image is located at 15005700.
-            // Console.WriteLine();
-            // image = imageHelper.GetImage(dataFileName, 91313848, 60, 15005700);
-            // imageHelper.OutputImageInformation(image);
-
-            // //Test: Read TMSEL00.WMS (located at 91316020).  It's equivalent image is located at 15140868.
-            // Console.WriteLine();
-            // image = imageHelper.GetImage(dataFileName, 91316020, 38, 15140868);
-            // imageHelper.OutputImageInformation(image);
-
-            // //Test: Read TMPLQ00.WMS (located at 91312748).  It's equivalent image is located at 14596100.
-            // Console.WriteLine();
-            // image = imageHelper.GetImage(dataFileName, 91312748, 23, 14596100);
-            // imageHelper.OutputImageInformation(image);
-
+            Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
 

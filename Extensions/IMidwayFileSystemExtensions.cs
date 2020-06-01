@@ -18,11 +18,6 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
                 ImageDataReader imageDataReader = new ImageDataReader();
                 ImageData imageData = imageDataReader.Read(reader);
 
-                CRC32 crc32 = new CRC32();
-                stream.Seek(0, SeekOrigin.Begin);
-                if(!crc32.ValidateCRC(stream))
-                    Console.WriteLine($"{fileName} valid CRC validation.");
-
                 return imageData;
             }
         }

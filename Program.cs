@@ -70,17 +70,17 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
         static void Main(string[] args)
         {
-            string _outputPath = Path.Combine(Directory.GetCurrentDirectory(), "files");
+            _outputPath = Path.Combine(Directory.GetCurrentDirectory(), "files");
             Directory.CreateDirectory(_outputPath);
 
-            string _imagesPath = Path.Combine(_outputPath, "images");
+            _imagesPath = Path.Combine(_outputPath, "images");
             Directory.CreateDirectory(_imagesPath);
 
-            string _soundsPath = Path.Combine(_outputPath, "sounds");
+            _soundsPath = Path.Combine(_outputPath, "sounds");
             Directory.CreateDirectory(_soundsPath);
 
-            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
-            ExtractAllFiles(dataFileName);
+            // string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
+            // ExtractAllFiles(dataFileName);
 
             //Get the game file and extract the list of teams
             string gameFilePath = Path.Combine(_outputPath, "game.exe");

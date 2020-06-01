@@ -14,9 +14,9 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
 {
     public class NFLBlitzImageHelper
     {
-        private DataFileReader CreateDataFileReader(Stream stream)
+        private GameReader CreateDataFileReader(Stream stream)
         {
-            return new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeDataFileReader(stream);
+            return new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeReader(stream);
         }
 
         public void SaveAsPNG(ImageData image, string destPath)
@@ -31,32 +31,18 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
             }
         }
 
-        /// <summary>
-        /// Reads image information from the data file
-        /// </summary>
-        /// <param name="dataFileName">The data file to read the image information from</param>
-        /// <param name="imageInfoAddress">The starting location of the image info record</param>
-        /// <param name="numberOfEntries">The number of entries in the image</param>
-        /// <param name="imageAddress">The address of the image</param>
-        public Image GetImage(string dataFileName, uint imageTableAddress, uint numberOfEntries, uint imageAddress)
+        public ImageData SliceImage(string imageBasePath, ImageInfo imageInfo)
         {
-            using (Stream stream = File.OpenRead(dataFileName))
+            ImageDataReader reader = new ImageDataReader();
+
+            //Get the image data
+            using (Stream imageStream = File.OpenRead(imageBasePath))
             {
-                DataFileReader reader = CreateDataFileReader(stream);
-                return reader.ReadImage(imageTableAddress, numberOfEntries, imageAddress);
+                ImageData imageData = reader.Read(new BinaryReader(imageStream));
+                
+                return imageData;
             }
-        }
 
-        /// <summary>
-        /// Outputs information about an NFL Blitz image to the console
-        /// </summary>
-        /// <param name="image">An instance of <see cref="Image" /> to output information on</param>
-        public void OutputImageInformation(Image image)
-        {
-            Console.WriteLine($"Image information for {image.Info.Name}");
-            foreach (ImageInfo imageInfo in image.Info.Entries)
-                Console.WriteLine(imageInfo.ConvertToString(image.Data));
         }
-
     }
 }

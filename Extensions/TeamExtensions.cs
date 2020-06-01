@@ -12,7 +12,8 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendFormat("{0} ", team.Name);
             stringBuilder.AppendFormat("| {0} ", team.TeamAbbreviation);
-            stringBuilder.AppendFormat("| {0} ", String.Join(' ', team.UnknownRegion1.Select(b => b.ToString("x2")).ToArray()));
+            stringBuilder.AppendFormat("| {0} ", team.Reserved1);
+            stringBuilder.AppendFormat("| {0} ", team.DroneBase);
             stringBuilder.AppendFormat("| {0} ", team.CityName);
             stringBuilder.AppendFormat("| {0} ", team.CityAbbreviation);
             stringBuilder.AppendFormat("| {0:00} ", team.PassingRating);
@@ -20,13 +21,13 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
             stringBuilder.AppendFormat("| {0:00} ", team.LinemenRating);
             stringBuilder.AppendFormat("| {0:00} ", team.DefenseRating);
             stringBuilder.AppendFormat("| {0:00} ", team.SpecialTeamsRating);
-            stringBuilder.AppendFormat("| {0:00} ", team.PlayersOffset);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset2);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset3);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset4);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset5);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset6);
-            stringBuilder.AppendFormat("| {0:00} ", team.FileOffset7);
+            stringBuilder.AppendFormat("| {0:00} ", team.PlayersAddress);
+            stringBuilder.AppendFormat("| {0:00} ", team.TeamLogoAddress);
+            stringBuilder.AppendFormat("| {0:00} ", team.TeamLogo30Address);
+            stringBuilder.AppendFormat("| {0:00} ", team.TeamSelectedNameAddress);
+            stringBuilder.AppendFormat("| {0:00} ", team.TeamNameAddress);
+            stringBuilder.AppendFormat("| {0:00} ", team.Reserved2);
+            stringBuilder.AppendFormat("| {0:00} ", team.UnknownAddress);
 
             return stringBuilder.ToString();
         }

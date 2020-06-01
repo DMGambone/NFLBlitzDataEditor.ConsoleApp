@@ -11,7 +11,7 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
         {
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendFormat("| {0:X} ", imageInfo.ImageAddress);
+            stringBuilder.AppendFormat("| {0,16} ", imageInfo.ImageName);
 
             stringBuilder.AppendFormat("| {0:000} ", imageInfo.Width);
             stringBuilder.AppendFormat("| {0:000} ", imageInfo.Height);

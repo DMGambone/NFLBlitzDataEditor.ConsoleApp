@@ -13,22 +13,9 @@ namespace NFLBlitzDataEditor.ConsoleApp
 {
     class Program
     {
-        static void ViewFileRange(Stream stream, uint startIndex, int count, uint segmentSize = 40)
-        {
-            stream.Seek(startIndex, SeekOrigin.Begin);
-            byte[] buffer = new byte[count];
-            stream.Read(buffer, 0, count);
-
-            BinaryReader binaryReader = new BinaryReader(new MemoryStream(buffer));
-            while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
-            {
-                byte[] segment = binaryReader.ReadBytes((int)segmentSize);
-                string segmentAsHex = String.Join(' ', segment.Select(b => b.ToString("x2")).ToArray());
-                string segmentString = System.Text.Encoding.ASCII.GetString(segment.Select(b => (b >= 0x20 && b <= 0x7e) ? b : (byte)'.').ToArray());
-
-                Console.WriteLine("{0, -" + ((segmentSize * 3) - 1).ToString() + "}  |  {1}", segmentAsHex, segmentString);
-            }
-        }
+        static string _outputPath = "";
+        static string _imagesPath = "";
+        static string _soundsPath = "";
 
         static bool SaveAsImage(IMidwayFileSystem fileSystem, FileAllocationTableEntry entry, string outputPath)
         {
@@ -46,17 +33,9 @@ namespace NFLBlitzDataEditor.ConsoleApp
             return true;
         }
 
-        static void Main(string[] args)
+        static void ExtractAllFiles(string dataFileName)
         {
-            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
-
-            string outputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "files");
-            Directory.CreateDirectory(outputDirectory);
-
-            string imagesDirectory = Path.Combine(outputDirectory, "images");
-            Directory.CreateDirectory(imagesDirectory);
-
-            string fileManifestPath = Path.Combine(outputDirectory, "file manifest.txt");
+            string fileManifestPath = Path.Combine(_outputPath, "file manifest.txt");
             if (File.Exists(fileManifestPath))
                 File.Delete(fileManifestPath);
 
@@ -68,17 +47,50 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 foreach (FileAllocationTableEntry entry in fileEntries)
                 {
                     File.AppendAllText(fileManifestPath, $"{entry.ConvertToString()}\n");
-                    if (entry.Name.EndsWith(".wms", StringComparison.OrdinalIgnoreCase)
-                        && SaveAsImage(fileSystem, entry, imagesDirectory))
-                        continue;
+                    string ext = Path.GetExtension(entry.Name);
+
+                    string path = _outputPath;
+                    if (string.Equals(ext, ".bnk", StringComparison.OrdinalIgnoreCase))
+                        path = _soundsPath;
+                    else if (string.Equals(ext, ".wms", StringComparison.OrdinalIgnoreCase))
+                    {
+                        path = _imagesPath;
+                        SaveAsImage(fileSystem, entry, _imagesPath);
+                    }
 
                     using (Stream fileStream = fileSystem.OpenRead(entry.Name))
                     {
-                        string path = Path.Combine(outputDirectory, $"{entry.Name}");
+                        path = Path.Combine(path, $"{entry.Name}");
                         using (Stream outputStream = File.Open(path, FileMode.OpenOrCreate))
                             fileStream.CopyTo(outputStream);
                     }
                 }
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            string _outputPath = Path.Combine(Directory.GetCurrentDirectory(), "files");
+            Directory.CreateDirectory(_outputPath);
+
+            string _imagesPath = Path.Combine(_outputPath, "images");
+            Directory.CreateDirectory(_imagesPath);
+
+            string _soundsPath = Path.Combine(_outputPath, "sounds");
+            Directory.CreateDirectory(_soundsPath);
+
+            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
+            ExtractAllFiles(dataFileName);
+
+            //Get the game file and extract the list of teams
+            string gameFilePath = Path.Combine(_outputPath, "game.exe");
+            using (Stream stream = File.OpenRead(gameFilePath))
+            {
+                IGameReader gameReader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeReader(stream);
+                IEnumerable<Team> teams = gameReader.ReadAllTeams();
+
+                foreach (Team team in teams)
+                    Console.WriteLine(team.ConvertToString());
             }
 
             Console.WriteLine("Press enter to exit...");

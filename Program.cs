@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using MidwayGamesFS;
 using NFLBlitzDataEditor.Core;
+using NFLBlitzDataEditor.Core.Extensions;
 using NFLBlitzDataEditor.Core.Readers;
 using NFLBlitzDataEditor.Core.Models;
 using NFLBlitzDataEditor.ConsoleApp.Extensions;
@@ -94,7 +95,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
             //Get the loading screen images
             int imageIndex = 0;
-            foreach(ImageInfo loadingScreenImage in team.LoadingScreenBannerImages)
+            foreach (ImageInfo loadingScreenImage in team.LoadingScreenBannerImages)
             {
                 imageIndex++;
                 ExtractImage(loadingScreenImage, Path.Combine(basePath, $"loading-screen-banner{imageIndex}.png"));
@@ -102,7 +103,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
             //Get the loading screen images
             imageIndex = 0;
-            foreach(ImageInfo loadingScreenImage in team.LoadingScreenTeamNameImages)
+            foreach (ImageInfo loadingScreenImage in team.LoadingScreenTeamNameImages)
             {
                 imageIndex++;
                 ExtractImage(loadingScreenImage, Path.Combine(basePath, $"loading-screen-teamname{imageIndex}.png"));
@@ -145,12 +146,35 @@ namespace NFLBlitzDataEditor.ConsoleApp
             string gameFilePath = Path.Combine(_outputPath, "game.exe");
             using (Stream stream = File.OpenRead(gameFilePath))
             {
-                IGameReader gameReader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcadeReader(stream);
+                IGameReader gameReader = new Blitz2kArcadeReader(stream);
                 IEnumerable<Team> teams = gameReader.ReadAllTeams();
 
-                foreach (Team team in teams)
+                // foreach (Team team in teams)
+                // {
+                //     ExtractTeamImages(team, _teamsPath);
+                // }
+
+                Playbook playbook = gameReader.GetPlaybook();
+                Console.WriteLine("Offsense Plays:");
+                foreach(PlaybookEntry entry in playbook.Offense)
                 {
-                    ExtractTeamImages(team, _teamsPath);
+                    Console.Write("| {0, 20}", entry.Name);
+                    Console.Write("| {0:x8}", entry.PlayDataAddress);
+                    Console.Write("| {0:000}", entry.Unknown1);
+                    Console.Write("| {0:x8}", entry.Unknown2);
+                    Console.Write("| {0:x8}", entry.Unknown3);
+                    Console.WriteLine();
+                }
+
+                Console.WriteLine("Defense Plays:");
+                foreach(PlaybookEntry entry in playbook.Defense)
+                {
+                    Console.Write("| {0, 20}", entry.Name);
+                    Console.Write("| {0:x8}", entry.PlayDataAddress);
+                    Console.Write("| {0:000}", entry.Unknown1);
+                    Console.Write("| {0:x8}", entry.Unknown2);
+                    Console.Write("| {0:x8}", entry.Unknown3);
+                    Console.WriteLine();
                 }
             }
 

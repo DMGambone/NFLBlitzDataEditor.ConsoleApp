@@ -92,6 +92,22 @@ namespace NFLBlitzDataEditor.ConsoleApp
             ExtractImage(team.NameImage, Path.Combine(basePath, "name.png"));
             ExtractImage(team.SelectedNameImage, Path.Combine(basePath, "selected-name.png"));
 
+            //Get the loading screen images
+            int imageIndex = 0;
+            foreach(ImageInfo loadingScreenImage in team.LoadingScreenBannerImages)
+            {
+                imageIndex++;
+                ExtractImage(loadingScreenImage, Path.Combine(basePath, $"loading-screen-banner{imageIndex}.png"));
+            }
+
+            //Get the loading screen images
+            imageIndex = 0;
+            foreach(ImageInfo loadingScreenImage in team.LoadingScreenTeamNameImages)
+            {
+                imageIndex++;
+                ExtractImage(loadingScreenImage, Path.Combine(basePath, $"loading-screen-teamname{imageIndex}.png"));
+            }
+
             //Loop through all the players and extract the player images
             foreach (Player player in team.Players)
             {
@@ -133,7 +149,9 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 IEnumerable<Team> teams = gameReader.ReadAllTeams();
 
                 foreach (Team team in teams)
+                {
                     ExtractTeamImages(team, _teamsPath);
+                }
             }
 
             Console.WriteLine("Press enter to exit...");

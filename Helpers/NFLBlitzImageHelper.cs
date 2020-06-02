@@ -14,11 +14,6 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
 {
     public class NFLBlitzImageHelper
     {
-        private GameReader CreateDataFileReader(Stream stream)
-        {
-            return new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeReader(stream);
-        }
-
         public void SaveAsPNG(ImageData image, string destPath)
         {
             Rgba32[] pixels = image.Data.Select(pixel => new Rgba32(pixel)).ToArray();

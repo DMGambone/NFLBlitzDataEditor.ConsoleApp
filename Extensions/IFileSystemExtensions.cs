@@ -6,7 +6,7 @@ using NFLBlitzDataEditor.Core.Readers;
 
 namespace NFLBlitzDataEditor.ConsoleApp.Extensions
 {
-    public static class IMidwayFileSystemExtensions
+    public static class IFileSystemExtensions
     {
         public static ImageData ReadImage(this IFileSystem fileSystem, string fileName)
         {

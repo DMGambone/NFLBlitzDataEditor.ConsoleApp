@@ -20,28 +20,34 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
         static bool SaveAsImage(IFileSystem fileSystem, FileAllocationTableEntry entry, string outputPath)
         {
-            ImageData image = fileSystem.ReadImage(entry.Name);
-            if (image == null)
+            try
+            {
+                ImageData image = fileSystem.ReadImage(entry.Name);
+
+                NFLBlitzImageHelper imageHelper = new NFLBlitzImageHelper();
+                string path = Path.Combine(outputPath, $"{Path.GetFileNameWithoutExtension(entry.Name)}.png");
+                imageHelper.SaveAsPNG(image, path);
+
+                return true;
+            }
+            catch (InvalidDataException)
             {
                 Console.WriteLine($"{entry.Name} (address: {entry.Position}-{entry.Position + entry.Size}) did not contain valid image data.");
                 return false;
             }
+            catch
+            {
+                throw;
+            }
 
-            NFLBlitzImageHelper imageHelper = new NFLBlitzImageHelper();
-            string path = Path.Combine(outputPath, $"{Path.GetFileNameWithoutExtension(entry.Name)}.png");
-            imageHelper.SaveAsPNG(image, path);
-
-            return true;
         }
 
-        static void ExtractAllFiles(string dataFileName)
+        static void ExtractAllFiles(IFileSystem fileSystem)
         {
             string fileManifestPath = Path.Combine(_outputPath, "file manifest.txt");
             if (File.Exists(fileManifestPath))
                 File.Delete(fileManifestPath);
 
-            IDataBuffer dataBuffer = new FileBuffer(dataFileName);
-            IFileSystem fileSystem = new BlitzFileSystem(dataBuffer);
             IEnumerable<FileAllocationTableEntry> fileEntries = fileSystem.GetFiles();
 
             foreach (FileAllocationTableEntry entry in fileEntries)
@@ -78,18 +84,28 @@ namespace NFLBlitzDataEditor.ConsoleApp
             _soundsPath = Path.Combine(_outputPath, "sounds");
             Directory.CreateDirectory(_soundsPath);
 
-            // string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
-            // ExtractAllFiles(dataFileName);
+            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
+            IDataBuffer dataBuffer = new FileBuffer(dataFileName);
+            IFileSystem fileSystem = new BlitzFileSystem(dataBuffer);
+            ExtractAllFiles(fileSystem);
 
             //Get the game file and extract the list of teams
             string gameFilePath = Path.Combine(_outputPath, "game.exe");
             using (Stream stream = File.OpenRead(gameFilePath))
             {
-                IGameReader gameReader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcade.Blitz2kArcadeReader(stream);
+                IGameReader gameReader = new NFLBlitzDataEditor.Core.Readers.Blitz2kArcadeReader(stream);
                 IEnumerable<Team> teams = gameReader.ReadAllTeams();
 
                 foreach (Team team in teams)
+                {
                     Console.WriteLine(team.ConvertToString());
+
+                    foreach (Player player in team.Players)
+                    {
+                        Console.WriteLine(player.ConvertToString());
+                    }
+                    Console.WriteLine();
+                }
             }
 
             Console.WriteLine("Press enter to exit...");

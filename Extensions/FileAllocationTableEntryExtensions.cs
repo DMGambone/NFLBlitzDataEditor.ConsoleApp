@@ -5,7 +5,7 @@ using MidwayGamesFS;
 
 namespace NFLBlitzDataEditor.ConsoleApp.Extensions
 {
-    public static class FileSystemEntryExtensions
+    public static class FileAllocationTableEntryExtensions
     {
         public static string ConvertToString(this FileAllocationTableEntry entry)
         {

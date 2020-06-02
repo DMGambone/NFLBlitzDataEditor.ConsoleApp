@@ -28,16 +28,42 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
 
         public ImageData SliceImage(string imageBasePath, ImageInfo imageInfo)
         {
-            ImageDataReader reader = new ImageDataReader();
+            string imagePath = Path.Combine(imageBasePath, imageInfo.ImageName);
 
             //Get the image data
-            using (Stream imageStream = File.OpenRead(imageBasePath))
+            ImageDataReader reader = new ImageDataReader();
+            ImageData imageData = null;
+            using (Stream imageStream = File.OpenRead(imagePath))
             {
-                ImageData imageData = reader.Read(new BinaryReader(imageStream));
-                
-                return imageData;
+                imageData = reader.Read(new BinaryReader(imageStream));
             }
 
+            int size = (int)(imageInfo.Width * imageInfo.Height);
+            uint[] slicedImageData = new uint[size];
+            int sourceX = (int)(imageInfo.X1 * imageData.Width);
+            int sourceY = (int)(imageInfo.Y1 * imageData.Height);
+            int sourceImageStart = (int)(sourceY * imageData.Width) + sourceX;
+            for (int h = 0; h < (int)imageInfo.Height; h++)
+            {
+                int sourceIndex = sourceImageStart + (h * (int)imageData.Width);
+                int destinationIndex = h * (int)imageInfo.Width;
+                Array.Copy(imageData.Data, sourceIndex, slicedImageData, destinationIndex, (int)imageInfo.Width);
+            }
+
+            return new ImageData()
+            {
+                Version = imageData.Version,
+                Bias = imageData.Bias,
+                FilterMode = imageData.FilterMode,
+                UseTrilinearFiltering = imageData.UseTrilinearFiltering,
+                Width = (int)imageInfo.Width,
+                Height = (int)imageInfo.Height,
+                SmallestLOD = imageData.SmallestLOD,
+                LargestLOD = imageData.LargestLOD,
+                AspectRatio = imageData.AspectRatio,
+                Format = imageData.Format,
+                Data = slicedImageData
+            };
         }
     }
 }

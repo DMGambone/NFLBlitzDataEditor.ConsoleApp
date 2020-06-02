@@ -24,8 +24,8 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
             stringBuilder.AppendFormat("| 0x{0:x8} ", team.PlayersAddress);
             stringBuilder.AppendFormat("| 0x{0:x8} ", team.LogoAddress);
             stringBuilder.AppendFormat("| 0x{0:x8} ", team.Logo30Address);
-            stringBuilder.AppendFormat("| 0x{0:x8} ", team.SelectedNameAddress);
             stringBuilder.AppendFormat("| 0x{0:x8} ", team.NameAddress);
+            stringBuilder.AppendFormat("| 0x{0:x8} ", team.SelectedNameAddress);
             stringBuilder.AppendFormat("| 0x{0:x8} ", team.Reserved2);
             stringBuilder.AppendFormat("| 0x{0:x8} ", team.UnknownAddress);
 

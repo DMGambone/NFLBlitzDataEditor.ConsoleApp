@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using System.IO;
-using NFLBlitzDataEditor.Core;
-using NFLBlitzDataEditor.Core.FileSystem;
+using MidwayGamesFS;
 using NFLBlitzDataEditor.Core.Models;
 using NFLBlitzDataEditor.Core.Readers;
 
@@ -10,7 +8,7 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
 {
     public static class IMidwayFileSystemExtensions
     {
-        public static ImageData ReadImage(this IMidwayFileSystem fileSystem, string fileName)
+        public static ImageData ReadImage(this IFileSystem fileSystem, string fileName)
         {
             using (Stream stream = fileSystem.OpenRead(fileName))
             {

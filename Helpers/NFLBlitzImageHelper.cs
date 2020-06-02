@@ -8,7 +8,7 @@ using NFLBlitzDataEditor.Core.Enums;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats.Png;
 using NFLBlitzDataEditor.ConsoleApp.Extensions;
-using NFLBlitzDataEditor.Core.FileSystem;
+using MidwayGamesFS;
 
 namespace NFLBlitzDataEditor.ConsoleApp.Helpers
 {

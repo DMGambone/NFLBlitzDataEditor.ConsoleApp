@@ -71,6 +71,11 @@ namespace NFLBlitzDataEditor.ConsoleApp
                     path = Path.Combine(path, $"{entry.Name}");
                     using (Stream outputStream = File.Open(path, FileMode.OpenOrCreate))
                         fileStream.CopyTo(outputStream);
+                    if (entry.Timestamp != DateTime.MinValue)
+                    {
+                        File.SetCreationTime(path, entry.Timestamp);
+                        File.SetLastWriteTime(path, entry.Timestamp);
+                    }
                 }
             }
         }
@@ -123,9 +128,38 @@ namespace NFLBlitzDataEditor.ConsoleApp
             }
         }
 
+        private static void OutputPlaybookEntry(PlaybookEntry entry, bool outputPlayDetails = false)
+        {
+            Console.WriteLine(entry.ConvertToString());
+            if (outputPlayDetails &&
+                entry.PlayData != null)
+            {
+                PlayStartingPosition[] formation = entry.PlayData.Formation.ToArray();
+                PlayRoute[] routes = entry.PlayData.Routes.ToArray();
+                for (int i = 0; i < 7; i++)
+                {
+                    Console.WriteLine("  {0,16} {1}", "", formation[i].ConvertToString());
+                    foreach (PlayRouteAction routeAction in routes[i].Actions)
+                    {
+                        Console.WriteLine("  {0,30} {1}", "", routeAction.ConvertToString());
+                    }
+                }
+            }
+        }
+
+
+        private static void OutputPlaybookEntries(IEnumerable<PlaybookEntry> playbookEntries, bool outputPlayDetails = false)
+        {
+            foreach (PlaybookEntry entry in playbookEntries)
+                OutputPlaybookEntry(entry, outputPlayDetails);
+        }
+
         static void Main(string[] args)
         {
-            _outputPath = Path.Combine(Directory.GetCurrentDirectory(), "files");
+            //string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
+            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-Mame with custom play.bin";
+
+            _outputPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileNameWithoutExtension(dataFileName));
             Directory.CreateDirectory(_outputPath);
 
             _imagesPath = Path.Combine(_outputPath, _imagesPath);
@@ -137,10 +171,9 @@ namespace NFLBlitzDataEditor.ConsoleApp
             _teamsPath = Path.Combine(_outputPath, _teamsPath);
             Directory.CreateDirectory(_teamsPath);
 
-            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
             IDataBuffer dataBuffer = new FileBuffer(dataFileName);
             IFileSystem fileSystem = new BlitzFileSystem(dataBuffer);
-            //ExtractAllFiles(fileSystem);
+            ExtractAllFiles(fileSystem);
 
             //Get the game file and extract the list of teams
             string gameFilePath = Path.Combine(_outputPath, "game.exe");
@@ -156,26 +189,30 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
                 Playbook playbook = gameReader.GetPlaybook();
                 Console.WriteLine("Offsense Plays:");
-                foreach(PlaybookEntry entry in playbook.Offense)
-                {
-                    Console.Write("| {0, 20}", entry.Name);
-                    Console.Write("| {0:x8}", entry.PlayDataAddress);
-                    Console.Write("| {0:000}", entry.Unknown1);
-                    Console.Write("| {0:x8}", entry.Unknown2);
-                    Console.Write("| {0:x8}", entry.Unknown3);
-                    Console.WriteLine();
-                }
+                OutputPlaybookEntries(playbook.Offense);
+
+                Console.WriteLine("Custom Plays:");
+                OutputPlaybookEntries(playbook.Custom);
 
                 Console.WriteLine("Defense Plays:");
-                foreach(PlaybookEntry entry in playbook.Defense)
+                OutputPlaybookEntries(playbook.Defense);
+
+                IEnumerator<IEnumerable<PlaybookEntry>> teamPlayEnumerator = playbook.TeamPlays.GetEnumerator();
+                teamPlayEnumerator.Reset();
+                foreach (Team team in teams)
                 {
-                    Console.Write("| {0, 20}", entry.Name);
-                    Console.Write("| {0:x8}", entry.PlayDataAddress);
-                    Console.Write("| {0:000}", entry.Unknown1);
-                    Console.Write("| {0:x8}", entry.Unknown2);
-                    Console.Write("| {0:x8}", entry.Unknown3);
-                    Console.WriteLine();
+                    Console.WriteLine($"{team.Name}:");
+                    teamPlayEnumerator.MoveNext();
+                    OutputPlaybookEntries(teamPlayEnumerator.Current);
                 }
+
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine();
+                OutputPlaybookEntry(playbook.Offense.FirstOrDefault(p => p.Name == "UP THE GUT"), true);
+
             }
 
             Console.WriteLine("Press enter to exit...");

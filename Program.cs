@@ -33,7 +33,7 @@ namespace NFLBlitzDataEditor.ConsoleApp
             }
             catch (InvalidDataException)
             {
-                Console.WriteLine($"{entry.Name} (address: {entry.Position}-{entry.Position + entry.Size}) did not contain valid image data.");
+                Console.WriteLine($"{entry.Name} did not contain valid image data.");
                 return false;
             }
             catch
@@ -50,6 +50,8 @@ namespace NFLBlitzDataEditor.ConsoleApp
                 File.Delete(fileManifestPath);
 
             IEnumerable<FileAllocationTableEntry> fileEntries = fileSystem.GetFiles();
+
+            File.AppendAllText(fileManifestPath, "        Name | Size    | Date/Time            | Clusters\n");
 
             foreach (FileAllocationTableEntry entry in fileEntries)
             {
@@ -124,7 +126,10 @@ namespace NFLBlitzDataEditor.ConsoleApp
 
         static void Main(string[] args)
         {
-            _outputPath = Path.Combine(Directory.GetCurrentDirectory(), "files");
+            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
+            //string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\blitznba.bin";
+
+            _outputPath = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileNameWithoutExtension(dataFileName));
             Directory.CreateDirectory(_outputPath);
 
             _imagesPath = Path.Combine(_outputPath, _imagesPath);
@@ -136,10 +141,9 @@ namespace NFLBlitzDataEditor.ConsoleApp
             _teamsPath = Path.Combine(_outputPath, _teamsPath);
             Directory.CreateDirectory(_teamsPath);
 
-            string dataFileName = @"C:\development\NFLBlitzDataEditor\Data Files\Blitz2kGold-arcade.bin";
             IDataBuffer dataBuffer = new FileBuffer(dataFileName);
             IFileSystem fileSystem = new BlitzFileSystem(dataBuffer);
-            //ExtractAllFiles(fileSystem);
+            ExtractAllFiles(fileSystem);
 
             //Get the game file and extract the list of teams
             string gameFilePath = Path.Combine(_outputPath, "game.exe");

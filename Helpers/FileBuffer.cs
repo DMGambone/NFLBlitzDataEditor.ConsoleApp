@@ -38,7 +38,20 @@ namespace NFLBlitzDataEditor.ConsoleApp.Helpers
         /// <inheritdocs>
         public void Set(int position, byte[] data)
         {
-            throw new NotImplementedException();
+            using(BinaryWriter writer = GetWriter(position))
+            {
+                writer.Write(data);
+            }
         }
+
+        /// <inheritdocs>
+        public BinaryWriter GetWriter(int position)
+        {
+            Stream stream = File.OpenWrite(_fileName);
+            stream.Seek(position, SeekOrigin.Begin);
+
+            return new BinaryWriter(stream);
+        }
+
     }
 }

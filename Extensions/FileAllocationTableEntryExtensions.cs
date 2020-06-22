@@ -13,8 +13,7 @@ namespace NFLBlitzDataEditor.ConsoleApp.Extensions
             stringBuilder.AppendFormat("{0, 12} ", entry.Name);
             stringBuilder.AppendFormat("| {0:0000000} ", entry.Size);
             stringBuilder.AppendFormat("| {0:u} ", entry.Timestamp);
-            stringBuilder.AppendFormat("| {0} ", entry.Position);
-            stringBuilder.AppendFormat("| {0} ", entry.Checksum);
+            stringBuilder.AppendFormat("| {0} ", String.Join(" ", entry.Clusters.Select(cluster => cluster.ToString()).ToArray()));
 
             return stringBuilder.ToString();
         }
